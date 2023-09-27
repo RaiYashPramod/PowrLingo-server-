@@ -56,6 +56,7 @@ const login = async (req, res) => {
       try {
         console.log("if no magic link")
         // If the magic link is not provided, update the user's magic link
+        console.log(user)
         const user = await User.findOneAndUpdate(
           { Email: email },
           { MagicLink: newMagicLink, MagicLinkExpired: false }
