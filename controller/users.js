@@ -60,6 +60,7 @@ const login = async (req, res) => {
           { Email: email },
           { MagicLink: newMagicLink, MagicLinkExpired: false }
         );
+        console.log(user,"user after magic generated")
         send_magic_link(email, user.MagicLink);
         res.send({ ok: true, message: "Hit the link in email to sign in" });
       } catch (err) {
