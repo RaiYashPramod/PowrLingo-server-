@@ -2,7 +2,6 @@ const User = require("../models/users");
 const jwt = require("jsonwebtoken");
 const validator = require("validator");
 const { v4: uuidv4 } = require("uuid");
-const { send_magic_link } = require("./email");
 const jwt_secret = process.env.JWT_SECRET;
 const bcrypt = require("bcrypt");
 
@@ -39,7 +38,7 @@ const register = async (email, password) => {
 
 // Function to handle user login
 const login = async (req, res) => {
-  console.log("running login");
+
   const { email, password } = req.body;
   if (!email || !password) {
     return res.json({ ok: false, message: "Email and password are required" });
@@ -50,7 +49,7 @@ const login = async (req, res) => {
 
   try {
     const user = await User.findOne({ Email: email });
-    console.log("4");
+
     if (!user) {
       // If the user does not exist, you can choose to handle this case as needed
       let reg = await register(email, password);
