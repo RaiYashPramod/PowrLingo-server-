@@ -1,5 +1,4 @@
 const mongoose = require("mongoose");
-const { v4: uuidv4 } = require("uuid");
 const Schema = mongoose.Schema;
 
 const UserSchema = new Schema(
@@ -20,15 +19,9 @@ const UserSchema = new Schema(
       required: true,
       unique: true,
     },
-    MagicLink: {
+    Password: {
       type: String,
-      required: false,
-      unique: false,
-      default: uuidv4,
-    },
-    MagicLinkExpired: {
-      type: Boolean,
-      default: false,
+      required: true,
     },
     languageToLearn: {
       type: String,

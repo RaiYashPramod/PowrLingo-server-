@@ -4,80 +4,78 @@ const validator = require("validator");
 const { v4: uuidv4 } = require("uuid");
 const { send_magic_link } = require("./email");
 const jwt_secret = process.env.JWT_SECRET;
-const newMagicLink = uuidv4();
+const bcrypt = require("bcrypt");
+
 
 // Function to register a new user
-const register = async (email) => {
+const register = async (email, password) => {
   const uniqueUserId = uuidv4();
-  console.log("registering")
+  console.log("registering");
   try {
+    // Check if the email is already in use
+    const existingUser = await User.findOne({ Email: email });
+    if (existingUser) {
+      return { ok: false, message: "Email is already registered" };
+    }
+
+    // Hash the password
+    const hashedPassword = await bcrypt.hash(password, 10);
+    console.log("hashed password", hashedPassword);
     const newUser = {
       UUI: uniqueUserId,
       Email: email,
-      MagicLink: newMagicLink,
+      Password: hashedPassword,
     };
 
     // Create a new user in the database
     let user = await User.create(newUser);
-    // Send a magic link to the user's email
-    let sendEmail = send_magic_link(email, user.MagicLink, "signup");
     return { ok: true, message: "User created successfully" };
   } catch (err) {
-    console.log(err)
-    return { ok: false, message: err };
+    console.error("Registration error:", err);
+    return { ok: false, message: "Registration failed" };
   }
 };
 
+
 // Function to handle user login
 const login = async (req, res) => {
-  console.log("running login")
-  const { email, magicLink = "" } = req.body;
-  if (!email) {
-    return res.json({ ok: false, message: "Email is required" });
+  console.log("running login");
+  const { email, password } = req.body;
+  if (!email || !password) {
+    return res.json({ ok: false, message: "Email and password are required" });
   }
   if (!validator.isEmail(email)) {
     return res.json({ ok: false, message: "Invalid email" });
   }
 
-  console.log("3")
-
   try {
     const user = await User.findOne({ Email: email });
-    console.log("4")
+    console.log("4");
     if (!user) {
-      // If the user does not exist, register them
-      let reg = await register(email);
-      res.send({
-        ok: true,
-        message:
-          "Your account has been created, click the link in email to sign in 👻",
-      });
-    } else if (!magicLink) {
-      try {
-        console.log("if no magic link")
-        // If the magic link is not provided, update the user's magic link
-        console.log(user)
-        const user = await User.findOneAndUpdate(
-          { Email: email },
-          { MagicLink: newMagicLink, MagicLinkExpired: false }
-        );
-        console.log(user,"user after magic generated")
-        send_magic_link(email, user.MagicLink);
-        res.send({ ok: true, message: "Hit the link in email to sign in" });
-      } catch (err) {
-        res.send({ ok: false, message: "Something went wrong" });
+      // If the user does not exist, you can choose to handle this case as needed
+      let reg = await register(email, password);
+      if (reg.ok) {
+        return res.json({ ok: true, message: "Registration successful" });
       }
-    } else if (user.MagicLink == magicLink && user.MagicLinkExpired === false) {
-      console.log("if Magic present and matches")
-      // If the magic link matches and is not expired, generate a JWT token
+    }
+
+    // Compare the provided password with the hashed password stored in the database
+    const passwordMatch = await bcrypt.compare(password, user.Password);
+
+    if (passwordMatch) {
+      // Passwords match, generate a JWT token, update flags, and respond accordingly
       const token = jwt.sign(user.toJSON(), jwt_secret, { expiresIn: "1h" });
-      // Update the MagicLinkExpired flag
+      // Update the MagicLinkExpired flag (if needed)
       await User.findOneAndUpdate({ Email: email }, { MagicLinkExpired: true });
-      res.json({ ok: true, message: "Welcome back", token, email });
-    } else return res.json({ ok: false, message: "Magic link expired! Please Try Again." });
+
+      return res.json({ ok: true, message: "Welcome back", token, email });
+    } else {
+      // Passwords do not match
+      return res.json({ ok: false, message: "Incorrect password" });
+    }
   } catch (error) {
-    res.json({ ok: false, error });
-    console.log(error);
+    console.error("Login error:", error);
+    return res.json({ ok: false, message: "Login failed" });
   }
 };
 
