@@ -9,6 +9,7 @@ const newMagicLink = uuidv4();
 // Function to register a new user
 const register = async (email) => {
   const uniqueUserId = uuidv4();
+  console.log("registering")
   try {
     const newUser = {
       UUI: uniqueUserId,
@@ -38,9 +39,11 @@ const login = async (req, res) => {
     return res.json({ ok: false, message: "Invalid email" });
   }
 
+  console.log("3")
+
   try {
     const user = await User.findOne({ Email: email });
-
+    console.log("4")
     if (!user) {
       // If the user does not exist, register them
       let reg = await register(email);
@@ -51,6 +54,7 @@ const login = async (req, res) => {
       });
     } else if (!magicLink) {
       try {
+        console.log("if no magic link")
         // If the magic link is not provided, update the user's magic link
         const user = await User.findOneAndUpdate(
           { Email: email },
@@ -62,6 +66,7 @@ const login = async (req, res) => {
         res.send({ ok: false, message: "Something went wrong" });
       }
     } else if (user.MagicLink == magicLink && user.MagicLinkExpired === false) {
+      console.log("if Magic present and matches")
       // If the magic link matches and is not expired, generate a JWT token
       const token = jwt.sign(user.toJSON(), jwt_secret, { expiresIn: "1h" });
       // Update the MagicLinkExpired flag
