@@ -8,6 +8,8 @@ const transport = nodemailer.createTransport({
   }
 });
 
+console.log(process.env.NODEMAILER_EMAILID, process.env.NODEMAILER_PASSWORD)
+
 const URL = 'http://127.0.0.1:5173/enter/'
 
 const send_magic_link = async(email, link, which) => {
@@ -30,7 +32,6 @@ const send_magic_link = async(email, link, which) => {
     const response = await transport.sendMail(mailOptions);
     console.log('Link sent');
     return response;
-  
   } catch (err) {
     console.log("Something Went Wrong", err);
     return err;

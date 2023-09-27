@@ -22,13 +22,14 @@ const register = async (email) => {
     let sendEmail = send_magic_link(email, user.MagicLink, "signup");
     return { ok: true, message: "User created successfully" };
   } catch (err) {
+    console.log(err)
     return { ok: false, message: err };
   }
 };
 
 // Function to handle user login
 const login = async (req, res) => {
-  const { email, magicLink } = req.body;
+  const { email, magicLink = "" } = req.body;
 
   if (!email) {
     return res.json({ ok: false, message: "Email is required" });
@@ -69,6 +70,7 @@ const login = async (req, res) => {
     } else return res.json({ ok: false, message: "Magic link expired! Please Try Again." });
   } catch (error) {
     res.json({ ok: false, error });
+    console.log(error);
   }
 };
 
