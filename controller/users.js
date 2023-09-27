@@ -66,7 +66,7 @@ const login = async (req, res) => {
       // Update the MagicLinkExpired flag
       await User.findOneAndUpdate({ Email: email }, { MagicLinkExpired: true });
       res.json({ ok: true, message: "Welcome back", token, email });
-    } else return res.json({ ok: false, message: "Magic link expired" });
+    } else return res.json({ ok: false, message: "Magic link expired! Please Try Again." });
   } catch (error) {
     res.json({ ok: false, error });
   }
