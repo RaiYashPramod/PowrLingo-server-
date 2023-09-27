@@ -8,7 +8,7 @@ const transport = nodemailer.createTransport({
   }
 });
 
-const URL = 'https://powrlingo.vercel.app/enter/'
+const URL = 'http://localhost:3000/enter/'
 
 const send_magic_link = async(email, link, which) => {
   if (which == 'signup') {
