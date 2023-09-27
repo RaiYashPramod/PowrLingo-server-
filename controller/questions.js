@@ -25,7 +25,7 @@ const getQuestions = async (req, res) => {
     const token = req.headers.authorization;
     const decoded = jwt.verify(token, jwt_secret);
     const user = await User.findOne({ UUI: decoded.UUI });
-    console.log(user.Name)
+
     if (!user) {
       return res
         .status(404)
@@ -35,7 +35,7 @@ const getQuestions = async (req, res) => {
     const attemptedQuestions = user.AttemptedQuestions;
     const language = user.languageToLearn;
     const proficiencyLevel = user.languageFamiliarity;
-    console.log(proficiencyLevel)
+
     const difficultyOrder = {
       beginner: ["easy", "medium", "hard"],
       intermediate: ["medium", "hard"],
@@ -43,7 +43,6 @@ const getQuestions = async (req, res) => {
     };
     
     const difficultyLevels = difficultyOrder[proficiencyLevel];
-    console.log(difficultyLevels, "234")
   
     const questions = await Question.find({
       language: language,
@@ -51,9 +50,6 @@ const getQuestions = async (req, res) => {
       _id: { $nin: attemptedQuestions },
     });
 
-    console.log(questions.map((question) => question.difficulty), "3")
-
-    console.log(questions.map(question => question.difficulty));
     if (questions.length === 0) {
       return res.status(404).json({
         success: false,
