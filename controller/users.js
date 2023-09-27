@@ -29,8 +29,8 @@ const register = async (email) => {
 
 // Function to handle user login
 const login = async (req, res) => {
+  console.log("running login")
   const { email, magicLink = "" } = req.body;
-
   if (!email) {
     return res.json({ ok: false, message: "Email is required" });
   }
