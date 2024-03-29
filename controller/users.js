@@ -9,14 +9,7 @@ const bcrypt = require("bcrypt");
 // Function to register a new user
 const register = async (email, password) => {
   const uniqueUserId = uuidv4();
-  console.log("registering");
   try {
-    // Check if the email is already in use
-    const existingUser = await User.findOne({ Email: email });
-    if (existingUser) {
-      return { ok: false, message: "Email is already registered" };
-    }
-
     // Hash the password
     const hashedPassword = await bcrypt.hash(password, 10);
     console.log("hashed password", hashedPassword);
@@ -65,7 +58,7 @@ const login = async (req, res) => {
       // Passwords match, generate a JWT token, update flags, and respond accordingly
       const token = jwt.sign(user.toJSON(), jwt_secret, { expiresIn: "1h" });
       // Update the MagicLinkExpired flag (if needed)
-      await User.findOneAndUpdate({ Email: email }, { MagicLinkExpired: true });
+      // await User.findOneAndUpdate({ Email: email }, { MagicLinkExpired: true });
 
       return res.json({ ok: true, message: "Welcome back", token, email });
     } else {
