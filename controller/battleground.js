@@ -123,6 +123,14 @@ const join = async (req, res) => {
     }
     const userId = verifiedUser.user._id;
 
+    const battle = await Battle.findOne({ battleId: battleId });
+    if (!battle) {
+      return res.status(404).json({ message: "Battle not found" });
+    }
+    if (battle.challenger.equals(userId)) {
+      return res.status(400).json({ message: "You cannot join your own battle" });
+    }
+
     const updatedBattle = await Battle.findOneAndUpdate(
       {
         battleId: battleId,
