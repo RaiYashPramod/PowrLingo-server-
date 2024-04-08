@@ -161,4 +161,15 @@ const leaderboard = async(req, res) => {
   }
 }
 
-module.exports = { login, verify_token, getuser, updateProfile, resetProgress, leaderboard };
+const getUserDetails = async (req, res) => {
+  try {
+    const id = req.params.id;
+    const user = await User.findById(id);
+    res.status(200).json({ success: true, user });
+  } catch (error) {
+    res.status(500).json({ success: false, error: "Something went wrong" });
+  }
+  
+}
+
+module.exports = { login, verify_token, getuser, updateProfile, resetProgress, leaderboard, getUserDetails };

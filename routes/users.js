@@ -12,4 +12,6 @@ router.patch('/resetprogress', controller.resetProgress)
 
 router.get('/leaderboard', controller.leaderboard)
 
+router.get('/getuserdetails/:id', controller.getUserDetails)
+
 module.exports = router;
