@@ -14,6 +14,7 @@ const battleSchema = new Schema({
     default: 0,
   },
   winner: {type: Schema.Types.ObjectId, ref: 'Users'},
+  language: {type: String, required: true},
   userScores: [{user: {type: Schema.Types.ObjectId, ref: 'Users'}, correctAnswer: Number}],
   challenger: {type: Schema.Types.ObjectId, ref: 'Users'},
   status: {type: String, default: 'Waiting for opponent'},

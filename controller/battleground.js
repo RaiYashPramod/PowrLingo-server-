@@ -3,7 +3,9 @@ const Battle = require("../models/battles");
 const jwt = require("jsonwebtoken");
 const jwt_secret = process.env.JWT_SECRET;
 const User = require("../models/users");
+const Question = require("../models/questions");
 
+// helper functions
 const getuser = async (token) => {
   const decoded = jwt.verify(token, jwt_secret);
   const user = await User.findOne({ UUI: decoded.UUI });
@@ -69,6 +71,7 @@ const create = async (req, res) => {
   try {
     const battleId = uuidv4(); // Generate a unique battleId
     const numOfQuestions = req.body.numOfQuestions;
+    const language = req.body.language;
     const token = req.headers.authorization;
     const verifiedUser = await getuser(token);
 
@@ -99,6 +102,7 @@ const create = async (req, res) => {
       battleId: battleId,
       participants: [userId],
       numOfQuestions: numOfQuestions,
+      language: language,
       challenger: userId,
     };
 
@@ -152,4 +156,73 @@ const join = async (req, res) => {
   }
 };
 
-module.exports = { getBattle, create, join, onGoingBattle };
+const changeTurn = async (req, res) => {
+  const  battleId  = req.params.id;
+  const { challenger } = req.body;
+  try {
+    const battle = await Battle.findOne({ battleId: battleId });
+    if (!battle) {
+      return res.status(404).json({ message: "Battle not found" });
+    }
+
+    const updatedTurn = await Battle.findOneAndUpdate(
+      { battleId: battleId },
+      { challenger: challenger },
+      { new: true }
+    )
+
+    res.status(200).json({ meessage: 'Player turn has been updated successfully', updatedTurn });
+  } catch (error) {
+    console.error(error.message);
+    res.status(500).json({ msg: 'Server error' });
+  }
+}
+
+const fetchQuestions = async (req, res) => {
+  try {
+    const battleId = req.params.id;
+    const battle = await Battle.findOne({ battleId: battleId });
+
+    if (!battle) {
+      return res.status(404).json({ message: "Battle not found" });
+    }
+
+    const language = battle.language;
+
+    const questions = await Question.find({ language: language });
+
+    if (questions.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: "No questions found for the specified language",
+      });
+    }
+
+    const shuffledQuestions = shuffleArray(questions)
+
+
+    const randomQuestions = shuffledQuestions.slice(0, battle.numOfQuestions)
+    console.log(randomQuestions);
+    res.status(200).json({succcess: true, message: 'Questions fetched successfully', randomQuestions})
+
+
+  } catch (error) {
+    res
+      .status(500)
+      .json({ success: false, message: "Failed to fetch the questions" });
+  }
+}
+
+//helperfunctions
+const shuffleArray = (array) => {
+  for (let i = array.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [array[i], array[j]] = [array[j], array[i]];
+  }
+  return array;
+};
+
+const submitAnswer = async() => {
+  
+}
+module.exports = { getBattle, create, join, onGoingBattle, changeTurn, fetchQuestions };
